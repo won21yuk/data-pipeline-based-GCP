@@ -1,0 +1,34 @@
+# temp stage
+FROM python:3.7-slim as builder
+
+WORKDIR /app
+ADD . /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/docker-kubernetes-370811-f49003f1ee92.json"
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NOWARNINGS="yes"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc \
+    apt-utils
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt .
+RUN python -m pip install --upgrade pip
+RUN python -m pip install -r requirements.txt
+
+
+# final stage
+FROM python:3.7-slim
+
+COPY --from=builder /opt/venv /opt/venv
+
+WORKDIR /app
+ADD . /app
+
+ENV PATH="/opt/venv/bin:$PATH"
+CMD ["python", "tweepy-test.py"]

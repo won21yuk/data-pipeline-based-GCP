@@ -1,0 +1,2 @@
+google-cloud-pubsub==2.13.11
+tweepy==4.12.1
